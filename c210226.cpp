@@ -72,7 +72,7 @@ void func()
         printf("\n");
     }
 
-    int i; scanf_s("%d", &i);   // この1行で実行を止める
+    //int i; scanf_s("%d", &i);   // この1行で実行を止める
 
     std::vector<int> v{ 1, 2, 3, 4, 5, 6, 7 };  // 初期化子リスト (initializer lists)
     for (const auto& x : v) {   // 型推測autoも使える
@@ -105,18 +105,6 @@ void func()
         else {
             printf("%d found\n", cnt);
         }
-    }
-
-    std::deque<int> deqInt{ 3, 4, 5 };
-    printf("size %d\n", deqInt.size());
-    for (int cnt = 0; cnt < deqInt.size(); cnt++) {
-        printf("%d\n", deqInt[cnt]);
-    }
-    deqInt.push_front(2);
-    deqInt.emplace_back(6);    // dequeではpush_front()が使える
-    printf("size %d\n", deqInt.size());
-    for (int cnt = 0; cnt < deqInt.size(); cnt++) {
-        printf("%d\n", deqInt[cnt]);
     }
 
     std::vector<int> vecInt{ 3, 4, 5 };
@@ -1138,6 +1126,110 @@ void func4() {
             std::cout << i.first << " " << i.second << std::endl;   // mapの要素を取り出すときはfirst、secondを使う
         }
     }
+    {
+        // ラムダ式
+        auto f = [] {};
+        f();
+        auto f2 = [] {return 1; };
+        printf("%d\n", f2());
+        printf("%f\n", []() -> auto {return 2.2f; }());
+        std::cout << []() -> auto {return 2.2f; }() << std::endl;
+        int i{ 1 };
+        printf("%d\n", [i]() {return 1+1; }());
+        printf("%d\n", [&i] { return ++i; }());
+        printf("%d\n", [i](int j){return i + j; }(1));
+        printf("%d\n", [&i](int j) {return ++i + j; }(1));
+        std::cout << [] {return "AAAAA"; }() << std::endl;
+    }
+    {
+        // std::deque リングバッファとして使える
+        std::deque<int> deq{};
+        deq.emplace_back(1);
+        deq.emplace_back(2);
+        deq.emplace_back(3);
+        printf("size %d\n", deq.size());
+        for (int cnt = 0; cnt < deq.size(); cnt++) {
+            printf("%d\n", deq[cnt]);
+        }
+        deq.pop_front();
+        deq.pop_front();
+        deq.emplace_back(4);
+        deq.emplace_back(5);
+        printf("size %d\n", deq.size());
+        for (int cnt = 0; cnt < deq.size(); cnt++) {
+            printf("%d\n", deq[cnt]);
+        }
+    }
+}
+
+// インライン名前空間
+namespace inlineNameSpace {
+    namespace A {
+        void funcA() {}
+    }
+    inline namespace B {
+        void funcB() {}
+    }
+}
+// ユーザー定義リテラル
+namespace user_defined_literals {
+    unsigned long long int operator"" _m(unsigned long long int i) {
+        return i;
+    }
+    unsigned long long int operator"" _km(unsigned long long int i) {
+        return i * 1000;
+    }
+    unsigned long long int operator"" _mm(unsigned long long int i) {
+        return i * 1000 * 1000;
+    }
+}
+using namespace user_defined_literals;  // ユーザー定義リテラル
+
+// 委譲コンストラクタ、継承コンストラクタ、delete宣言
+class C2103221422 {
+public:
+    C2103221422(int a, int b, int c) {
+        printf("%d = %d * %d * %d\n", a * b * c, a, b, c);
+    }
+    C2103221422() : C2103221422(1, 1, 1) {}    // 委譲コンストラクタ
+    C2103221422(int a) : C2103221422(a, 1, 1) {}    // 委譲コンストラクタ
+    C2103221422(int a, int b) : C2103221422(a, b, 1) {}    // 委譲コンストラクタ
+    C2103221422(std::vector<int>& v) : C2103221422(v[0], v[1], v[2]) {}    // 委譲コンストラクタ
+};
+class DeriC2103221422 : public C2103221422 {
+public:
+    using C2103221422::C2103221422; // 継承コンストラクタ
+    DeriC2103221422(int a) = delete;
+    DeriC2103221422(std::vector<int>& v) = delete;
+};
+
+void func5() {
+    {
+        inlineNameSpace::A::funcA();
+        //inlineNameSpace::funcA();   // funcAは見えないのでエラー
+        inlineNameSpace::funcB();    // インライン名前空間 (inline namespace)は、名前空間内の機能に透過的にアクセスするための機能
+    }
+    {
+        // ユーザー定義リテラル
+        unsigned long long int i = 1_mm + 500_km + 700_m;
+        printf("%lld\n", i);
+    }
+    {
+        C2103221422 b1{ 3, 3, 3 };
+        C2103221422 b2{ 3, 3 };
+        C2103221422 b3{ 3 };
+        C2103221422 b4{};
+        std::vector<int> v{ 4, 4, 4 };
+        C2103221422 b5{ v };
+        DeriC2103221422 d1{ 3, 3, 3 };    // 継承してるので使用可能
+        DeriC2103221422 d2{ 3, 3 };   // 継承してるので使用可能
+        //DeriC2103221422 d3(3);  // deleteしてるので使用不可
+        DeriC2103221422 d4{};   // 継承してるので使用可能
+
+        //DeriC2103221422 d4();   // ()にすると継承コンストラクタが呼ばれない
+
+        //DeriC2103221422 d5{v};  // deleteしてるので使用不可
+    }
 }
 
 class memberInitTestClass {
@@ -1159,6 +1251,7 @@ int main()
     uniquePtr2();
     func3();
     func4();
+    func5();
 
     return 0;
 }
