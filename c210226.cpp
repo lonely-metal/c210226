@@ -1,6 +1,7 @@
 ﻿/*
 *   210226:
-* 
+* 	210322:
+
 *   C++ 11/14/17/20 新しい仕様の使い方を覚えていく
 * 
 *   includeに追加： C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.27.29110\include
