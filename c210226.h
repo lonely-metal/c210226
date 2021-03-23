@@ -16,4 +16,7 @@ class large_class{};
 template <class T>
 void large_func(){}
 
+// 宣言時に要素数を指定した配列オブジェクトの、定義時の要素数を規定
+static int staticIntAray[10];
+
 #endif // _C210226
