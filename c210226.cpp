@@ -51,8 +51,22 @@ void about_auto() {
     auto f = [] {};                      // f は 引数を取らずに値を返さない operator() を持つユニークなクロージャ型
 }
 
+// [[noreturn]]属性 関数が決して返らないことを示すための属性
+[[noreturn]]void noreturn_func()
+{
+	throw std::runtime_error("runtime error\n");	// 実行時に異常終了起こす
+}
+
 void func()
 {
+	{
+		// [[noreturn]]属性
+		bool b=true;
+		if(false == b){
+			printf("noreturn route\n");
+			noreturn_func();
+		}
+	}
     char* ptr = nullptr;    // NULL→nullptr
     char ary[200];
     sprintf_s(ary, "ABC");   // sprintf()→sprintf_s()
@@ -74,7 +88,7 @@ void func()
 
     //int i; scanf_s("%d", &i);   // この1行で実行を止める
 
-    std::vector<int> v{ 1, 2, 3, 4, 5, 6, 7 };  // 初期化子リスト (initializer lists)
+    std::vector<int> v{ 1, 2, 3, 4, 5, 6, 7 };  // 初期化子リスト (initializer lists) ユーザー定義型のオブジェクトに対して、波カッコによるリスト初期化を使用できるようにするようオーバーロードする機能
     for (const auto& x : v) {   // 型推測autoも使える
         std::cout << x;
     }
@@ -263,8 +277,6 @@ void func2() {
     std::string json2 = R"({"user_id": 123, "name": "Alice"})"; // 生文字列リテラル(Rプレフィックス)
     printf("%s\n", json2.c_str());
 
-    printf("size: %zd\n", sizeof(uNion::ui));    // sizeof演算子にクラスの非静的メンバを、オブジェクトを作らずに指定できるようにする
-
     DEBUG_LOG("%d %d %s", 1, 2, "DEBUG_LOG");   // 可変引数マクロ
 
     std::array<int, 5> stAry{ 1, 2, 3, 4, 5 };    // std::array
@@ -275,19 +287,6 @@ void func2() {
     for (int i = 0; i < stVec.size(); i++) {
         printf("%d\n", stVec[i]);
     }
-
-    // std::next
-    // std::prev
-    decltype(stVec)::iterator it = std::next(stVec.begin());    // 1つ進む 1→2
-    printf("next %d\n", *it);
-    it = std::next(stVec.begin(), 3);   // 3つ進む 1→4
-    printf("next %d\n", *it);
-    it = std::prev(stVec.end());    // 1つ戻る 範囲外→5   最後尾の値を取得したいときは、これを使う
-    printf("prev %d\n", *it);
-    it = std::prev(stVec.end(), 2); // 2つ戻る 範囲外→4
-    printf("prev %d\n", *it);
-    printf("begin %d\n", *(stVec.begin())); // 最初の値
-    //printf("end %d\n", *(stVec.end()));   // 範囲外なので異常終了する
 
     std::vector<int> feVec{ 9, 8, 7, 6, 5 };
     auto feFunc = [](int i) { printf("%d\n", i); }; // ラムダ式
@@ -1139,12 +1138,81 @@ void func4() {
             std::cout << i.first << " " << i.second << std::endl;   // mapの要素を取り出すときはfirst、secondを使う
         }
     }
+}
+
+// alignas コンパイラに対し変数をメモリ上の特定の位置に配置（アライメント）するように要求するキーワード
+struct alignasSt{
+char	buff[4];
+};
+struct alignas(8) alignasSt8{
+char	buff[4];
+};
+struct alignas(16) alignasSt16{
+char	buff[4];
+};
+struct alignas(32) alignasSt32{
+char	buff[4];
+};
+
+// 宣言時に要素数を指定した配列オブジェクトの、定義時の要素数を規定
+extern int staticIntAray[10];
+
+void func5()
+{
     {
 		// extern template
 		large_class<int> l;
 		large_func<int>();
 	}
+	{
+		/*
+			マルチスレッドに関連する項目
+			
+				スレッドローカルストレージ
+				ブロックスコープを持つstatic変数初期化のスレッドセーフ化
+				[[carries_dependency]]属性
+		*/
+	}
+	{
+		// alignas コンパイラに対し変数をメモリ上の特定の位置に配置（アライメント）するように要求するキーワード
+		printf("%d\n", static_cast<int>(sizeof(alignasSt)));
+		printf("%d\n", static_cast<int>(sizeof(alignasSt8)));
+		printf("%d\n", static_cast<int>(sizeof(alignasSt16)));
+		printf("%d\n", static_cast<int>(sizeof(alignasSt32)));
+	}
+	{
+		// 宣言時に要素数を指定した配列オブジェクトの、定義時の要素数を規定
+		//int staticIntAray[];	// error C2133
+		//printf("%d\n", static_cast<int>(sizeof(staticIntAray)));
+	}
+	{
+		// sizeof演算子にクラスの非静的メンバを、オブジェクトを作らずに指定できるようにする
+		printf("size: %d\n", static_cast<int>(sizeof(alignasSt::buff)));
+		printf("size: %d\n", static_cast<int>(sizeof(alignasSt32::buff)));
+	}
+	{
+    	// std::next
+    	// std::prev
+   	    std::vector<int> stVec{ 1, 2, 3, 4, 5 };
+    	decltype(stVec)::iterator it = std::next(stVec.begin());    // 1つ進む 1→2
+    	printf("next %d\n", *it);
+    	it = std::next(stVec.begin(), 3);   // 3つ進む 1→4
+    	printf("next %d\n", *it);
+    	it = std::prev(stVec.end());    // 1つ戻る 範囲外→5   最後尾の値を取得したいときは、これを使う
+    	printf("prev %d\n", *it);
+    	it = std::prev(stVec.end(), 2); // 2つ戻る 範囲外→4
+    	printf("prev %d\n", *it);
+    	printf("begin %d\n", *(stVec.begin())); // 最初の値
+    	//printf("end %d\n", *(stVec.end()));   // 範囲外なので異常終了する
+	}
+	{
+		// std::begin() std::end()
+		int ary[] = {5, 3, 6, 1, 9, 7, 2};
+		std::for_each(std::begin(ary), std::end(ary), [](int x){printf("%d ", x);});
+		printf("\n");
+	}
 }
+
 
 class memberInitTestClass {
 private:
@@ -1165,6 +1233,7 @@ int main()
     uniquePtr2();
     func3();
     func4();
+    func5();
     
     sub_func();
 
