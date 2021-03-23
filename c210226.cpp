@@ -1161,11 +1161,6 @@ void func4() {
             printf("%d\n", deq[cnt]);
         }
     }
-    {
-		// extern template
-		large_class<int> l;
-		large_func<int>();
-	}
 }
 
 // インライン名前空間
@@ -1236,6 +1231,11 @@ void func5() {
 
         //DeriC2103221422 d5{v};  // deleteしてるので使用不可
     }
+    {
+		// extern template
+		large_class<int> l;
+		large_func<int>();
+	}
 }
 
 class memberInitTestClass {
