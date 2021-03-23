@@ -8,5 +8,12 @@ public:
 };
 
 void inlineTestFunc(inlineValueTest i);
+void sub_func();
+
+// extern template
+template <class T>
+class large_class{};
+template <class T>
+void large_func(){}
 
 #endif // _C210226
