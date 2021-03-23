@@ -541,9 +541,9 @@ void func3() {
         // 190
     printf("%lld\n", result.count());
 
-    //inlineValueTest i;
-    //inlineTestFunc(i);
-    //printf("%d\n", i.i);
+    inlineValueTest i;
+    inlineTestFunc(i);
+    printf("%d\n", i.i);
 
     auto [no, address, name] = structBindingTest();     // 構造化束縛
     printf("%d %d %s\n", no, address, name.c_str());
@@ -1139,6 +1139,11 @@ void func4() {
             std::cout << i.first << " " << i.second << std::endl;   // mapの要素を取り出すときはfirst、secondを使う
         }
     }
+    {
+		// extern template
+		large_class<int> l;
+		large_func<int>();
+	}
 }
 
 class memberInitTestClass {
@@ -1160,6 +1165,8 @@ int main()
     uniquePtr2();
     func3();
     func4();
+    
+    sub_func();
 
     return 0;
 }
