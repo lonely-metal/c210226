@@ -110,7 +110,7 @@ void func()
     std::vector<int> vecInt{ 3, 4, 5 };
     //vecInt.push_front(2);     // vectorではpush_front()が使えない
     vecInt.emplace_back(6);
-    printf("size %d\n", vecInt.size());
+    printf("size %llu\n", vecInt.size());
     for (int cnt = 0; cnt < vecInt.size(); cnt++) {
         printf("%d\n", vecInt[cnt]);
     }
@@ -251,7 +251,7 @@ void func2() {
     std::string json2 = R"({"user_id": 123, "name": "Alice"})"; // 生文字列リテラル(Rプレフィックス)
     printf("%s\n", json2.c_str());
 
-    printf("size: %d\n", sizeof(uNion::ui));    // sizeof演算子にクラスの非静的メンバを、オブジェクトを作らずに指定できるようにする
+    printf("size: %zd\n", sizeof(uNion::ui));    // sizeof演算子にクラスの非静的メンバを、オブジェクトを作らずに指定できるようにする
 
     DEBUG_LOG("%d %d %s", 1, 2, "DEBUG_LOG");   // 可変引数マクロ
 
@@ -425,7 +425,7 @@ void exceptionFunc() noexcept(false) {  // 例外が発生するかも知れな�
     throw "the end";
 }
 void exceptionFunc2() noexcept(true) {  // 例外が発生しないことを明示
-    throw "the end";
+    throw "the end";	// warning C4297
 }
 class referenceTest {
 public:
@@ -527,7 +527,7 @@ void func3() {
     // 結果の型はstd::chrono::seconds
     auto result = sec + min;
         // 190
-    printf("%d\n", result.count());
+    printf("%lld\n", result.count());
 
     inlineValueTest i;
     inlineTestFunc(i);
@@ -597,11 +597,11 @@ void func3() {
     auto vecShuffleDisp = [](int i) {  printf("%d\n", i);   };
     std::for_each(vecShuffle.begin(), vecShuffle.end(), vecShuffleDisp);
 
-    printf("char: %d\n", alignof(char));
-    printf("short: %d\n", alignof(short));
-    printf("int: %d\n", alignof(int));
-    printf("long: %d\n", alignof(long));
-    printf("double: %d\n", alignof(double));
+    printf("char: %d\n", static_cast<int>(alignof(char)));
+    printf("short: %d\n", static_cast<int>(alignof(short)));
+    printf("int: %d\n", static_cast<int>(alignof(int)));
+    printf("long: %d\n", static_cast<int>(alignof(long)));
+    printf("double: %d\n", static_cast<int>(alignof(double)));
 
     // ラムダ関数
     int li{ 0 };
@@ -680,7 +680,7 @@ void func3() {
     sec = 30s;
     auto msec = 150ms;
     auto sec_msec = sec + msec;
-    printf("%d\n", sec_msec.count());
+    printf("%lld\n", sec_msec.count());
 
     int ti = 100;
     double td = 50.5;
@@ -973,7 +973,8 @@ void func4() {
         // autoの使い所
         auto f = []() {return 0x1ffffffff; };
         int i = f();    // intで決め打ちするとオーバーフローしたとき値を保持できない
-        printf("0x%llx\n", i);
+        //printf("0x%llx\n", i);	// warning C4477
+        printf("0x%x\n", i);
         auto a = f();   // long long int型として値を保持
         printf("0x%llx\n", a);
 
@@ -1060,7 +1061,7 @@ void func4() {
             ary.emplace_back(cnt);
         }
         auto f = [](int i) -> bool {return(i % 3 == 0); };
-        printf("%d\n", std::count_if(ary.begin(), ary.end(), f));
+        printf("%lld\n", std::count_if(ary.begin(), ary.end(), f));
     }
     {
         std::vector<int> vec{ 40, 10, 20, -10, 30 };
