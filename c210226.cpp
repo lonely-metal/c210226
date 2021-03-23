@@ -1161,6 +1161,11 @@ void func4() {
             printf("%d\n", deq[cnt]);
         }
     }
+    {
+		// extern template
+		large_class<int> l;
+		large_func<int>();
+	}
 }
 
 // インライン名前空間
