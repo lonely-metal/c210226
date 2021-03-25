@@ -38,4 +38,6 @@ void sub_func(){
 		//int staticIntAray[];	// error C2133
 		//printf("%d\n", static_cast<int>(sizeof(staticIntAray)));
 	}
+	{
+	}
 }
