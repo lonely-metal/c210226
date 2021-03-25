@@ -1301,7 +1301,6 @@ void func5() {
 	}
 }
 
-
 class memberInitTestClass {
 private:
     int i = 100;    // 非静的メンバ変数の初期化
