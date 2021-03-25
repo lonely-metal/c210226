@@ -1198,9 +1198,9 @@ void func5()
     	printf("next %d\n", *it);
     	it = std::next(stVec.begin(), 3);   // 3つ進む 1→4
     	printf("next %d\n", *it);
-    	it = std::prev(stVec.end());    // 1つ戻る 範囲外→5   最後尾の値を取得したいときは、これを使う
+    	it = std::prev(stVec.end());        // 1つ戻る 範囲外→5   最後尾の値を取得したいときは、これを使う
     	printf("prev %d\n", *it);
-    	it = std::prev(stVec.end(), 2); // 2つ戻る 範囲外→4
+    	it = std::prev(stVec.end(), 2);     // 2つ戻る 範囲外→4
     	printf("prev %d\n", *it);
     	printf("begin %d\n", *(stVec.begin())); // 最初の値
     	//printf("end %d\n", *(stVec.end()));   // 範囲外なので異常終了する
@@ -1212,7 +1212,6 @@ void func5()
 		printf("\n");
 	}
 }
-
 
 class memberInitTestClass {
 private:
@@ -1239,4 +1238,3 @@ int main()
 
     return 0;
 }
-
