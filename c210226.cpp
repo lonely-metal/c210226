@@ -1220,6 +1220,85 @@ char	buff[4];
 // 宣言時に要素数を指定した配列オブジェクトの、定義時の要素数を規定
 extern int staticIntAray[10];
 
+// コンストラクタの順番を見る
+class cConstructTestSub {
+public:
+    cConstructTestSub() {
+        printf("%04d: %s\n", __LINE__, __FUNCTION__);
+    }
+    virtual ~cConstructTestSub() {
+        printf("%04d: %s\n", __LINE__, __FUNCTION__);
+    }
+};
+class cConstructTestSub2 {
+public:
+    cConstructTestSub2() {
+        printf("%04d: %s\n", __LINE__, __FUNCTION__);
+    }
+    virtual ~cConstructTestSub2() {
+        printf("%04d: %s\n", __LINE__, __FUNCTION__);
+    }
+};
+class cConstructTestMain {
+public:
+    cConstructTestMain() {
+        printf("%04d: %s\n", __LINE__, __FUNCTION__);
+        s2 = std::make_unique<cConstructTestSub2>();
+    }
+    virtual ~cConstructTestMain() {
+        printf("%04d: %s\n", __LINE__, __FUNCTION__);
+    }
+private:
+    cConstructTestSub s;
+    std::unique_ptr<cConstructTestSub2> s2;
+};
+// 明示的な型変換演算子のオーバーロード
+class explicitNoClass {
+public:
+    explicitNoClass(int a) {}
+};
+class explicitClass {
+public:
+    explicit explicitClass(int a) {}
+};
+
+class unique_ptr_test {
+public:
+    unique_ptr_test(const std::string& str) {
+        cStr = str;
+        printf("%s start\n", cStr.c_str());
+    }
+    ~unique_ptr_test() {
+        printf("%s end\n", cStr.c_str());
+    }
+private:
+    std::string cStr;
+};
+class unique_ptr_test_main {
+public:
+    unique_ptr_test_main() {
+        printf("%s\n", __FUNCTION__);
+        cUp1 = std::make_unique<unique_ptr_test>("constructor init");
+    }
+    ~unique_ptr_test_main() {
+        printf("%s\n", __FUNCTION__);
+    }
+    void func() {
+        /*
+        * unique_ptr変数がクラスメンバーの場合、make_unique実行した関数抜けても解放は実行されず、
+        * このクラスのデストラクタ終了時に解放される
+        * 
+        * なので、必ずしもコンストラクタで初期化しなければいけないってことは無い
+        */
+        cUp2 = std::make_unique<unique_ptr_test>("func init");
+    }
+    void func2() {
+        std::unique_ptr<unique_ptr_test> up = std::make_unique<unique_ptr_test>("func2 init");
+    }
+private:
+    std::unique_ptr<unique_ptr_test>    cUp1;
+    std::unique_ptr<unique_ptr_test>    cUp2;
+};
 void func5() {
     {
         inlineNameSpace::A::funcA();
@@ -1299,6 +1378,43 @@ void func5() {
 		std::for_each(std::begin(ary), std::end(ary), [](int x){printf("%d ", x);});
 		printf("\n");
 	}
+    {
+        // コンストラクタの順番を見る
+        cConstructTestMain m;
+        /*
+        *   privateでcConstructTestSubのクラス変数を持ってたら先にコンストラクタが実行され、後からデストラクタ実行される
+        *   今さら基本的なことに気がついた。。
+        * 
+            1227: cConstructTestSub::cConstructTestSub
+            1245: cConstructTestMain::cConstructTestMain
+            1236: cConstructTestSub2::cConstructTestSub2
+            1249: cConstructTestMain::~cConstructTestMain
+            1239: cConstructTestSub2::~cConstructTestSub2
+            1230: cConstructTestSub::~cConstructTestSub
+        */
+    }
+    {
+        // 明示的な型変換演算子のオーバーロード
+        explicitNoClass enc = 1;
+        //explicitClass ec = 1;   // エラー	C2440	'初期化中': 'int' から 'explicitClass' に変換できません
+    }
+    {
+        // std::copy std::copy_n
+        std::vector<int> vec{ 1, 2, 3, 4, 5, 6 };
+        std::vector<int> vec2(vec.size());  // サイズ分確保しないと実行エラー起こる
+        std::copy(vec.begin(), vec.end(), vec2.begin());
+        std::for_each(vec2.begin(), vec2.end(), [](int a) {printf("%d ", a); });
+        printf("\n");
+        std::vector<int> vec3(vec.size());  // サイズ分確保しないと実行エラー起こる
+        std::copy_n(vec.begin(), 3, vec3.begin());
+        std::for_each(vec3.begin(), vec3.end(), [](int a) {printf("%d ", a); });
+        printf("\n");
+    }
+    {
+        unique_ptr_test_main    uTest;
+        uTest.func();
+        uTest.func2();
+    }
 }
 
 class memberInitTestClass {
